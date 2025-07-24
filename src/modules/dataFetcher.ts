@@ -72,8 +72,8 @@ export class DataFetcher {
 
       logger.info(`Using trading pair symbol: ${symbol}`);
 
-      // If since is not provided, start from a reasonable date
-      const startDate = since || new Date('2020-01-01').getTime();
+      // If since is not provided, start from a reasonable date based on exchange launch dates
+      const startDate = since || this.getDefaultStartDate(this.exchange.id);
       logger.info(`Fetching data starting from: ${new Date(startDate).toISOString().split('T')[0]}`);
 
       const allData: any[] = [];
@@ -153,6 +153,31 @@ export class DataFetcher {
 
       throw error;
     }
+  }
+
+  /**
+   * Get default start date based on exchange launch dates
+   * @param exchangeId Exchange identifier
+   * @returns Default start date in milliseconds
+   */
+  private getDefaultStartDate(exchangeId: string): number {
+    // Exchange launch dates (approximate)
+    const exchangeLaunchDates: { [key: string]: string } = {
+      'binance': '2017-07-14',
+      'okx': '2017-07-01',
+      'bybit': '2018-03-15',
+      'kucoin': '2017-09-01',
+      'coinbase': '2012-06-01',
+      'gateio': '2013-04-01'
+    };
+
+    const launchDate = exchangeLaunchDates[exchangeId];
+    if (launchDate) {
+      return new Date(launchDate).getTime();
+    }
+
+    // Default fallback date
+    return new Date('2020-01-01').getTime();
   }
 
   /**
